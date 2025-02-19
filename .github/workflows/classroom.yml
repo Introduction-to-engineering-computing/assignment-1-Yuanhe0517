@@ -1,0 +1,30 @@
+name: Autograding Tests
+'on':
+- push
+- repository_dispatch
+permissions:
+  checks: write
+  actions: read
+  contents: read
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Sum test
+      id: sum-test
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Sum test
+        setup-command: pip install -r requirements.txt
+        command: pytest test_main.py -v
+        timeout: 1
+        max-score: 5
+    - name: Autograding Reporter
+      uses: classroom-resources/autograding-grading-reporter@v1
+      env:
+        SUM-TEST_RESULTS: "${{steps.sum-test.outputs.result}}"
+      with:
+        runners: sum-test
